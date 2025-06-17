@@ -13,49 +13,6 @@ impl Token {
     }
 }
 
-// TODO: I think making TokenType into an enum like this is ok, but I need to go through the code
-// again to make sure that it is
-enum TYPES {
-    ILLEGAL,
-    EOF,
-
-    IDENT,
-    INT,
-
-    ASSIGN,
-    PLUS,
-    MINUS,
-    SLASH,
-    ASTERISK,
-    BANG,
-    LT,
-    GT,
-    EQ,
-    NOT_EQ,
-    LT_EQ,
-    GT_EQ,
-
-    COMMA,
-    SEMICOLON,
-    COLON,
-
-    LPAREN,
-    RPAREN,
-    LBRACKET,
-    RBRACKET,
-    LBRACE,
-    RBRACE,
-
-    FUNCTION,
-    LET,
-    TRUE,
-    FALSE,
-    IF,
-    ELSE,
-    RETURN,
-    STRING,
-}
-
 pub const ILLEGAL: &str = "ILLEGAL";
 pub const EOF: &str = "EOF";
 
