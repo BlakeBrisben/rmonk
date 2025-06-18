@@ -1,3 +1,4 @@
+mod ast;
 mod lexer;
 mod token;
 
@@ -22,8 +23,6 @@ fn main() {
     let tok = token::lookup_ident(String::from("thing"));
 
     println!("{tok}");
-
-    let tok = token::STRING;
 
     let mut l = lexer::new(String::from("= 5;"));
 
