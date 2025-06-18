@@ -1,4 +1,5 @@
 use crate::token;
+use std::collections::HashMap;
 
 pub trait Statement {
     fn token_literal(&self) -> String;
@@ -28,7 +29,7 @@ impl Statement for Program {
         let mut ret = String::new();
 
         for stmt in self.statements.iter() {
-            ret = String::from(format!("{}\n{}", ret, stmt.string()));
+            ret = String::from(format!("{}{}\n", ret, stmt.string()));
         }
 
         ret
@@ -55,13 +56,13 @@ impl Expression for Identifier {
 
 // STATEMENTS
 
-pub struct LetStatement<'a> {
+pub struct LetStatement {
     token: token::Token,
-    name: &'a Identifier,
+    name: Box<Identifier>,
     value: Box<dyn Expression>,
 }
 
-impl<'a> Statement for LetStatement<'a> {
+impl Statement for LetStatement {
     fn token_literal(&self) -> String {
         self.token.literal.clone()
     }
@@ -157,6 +158,103 @@ impl Expression for IntegerLiteral {
     fn expression_node(&self) {}
 }
 
+pub struct StringLiteral {
+    token: token::Token,
+    value: String,
+}
+
+impl Expression for StringLiteral {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn string(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn expression_node(&self) {}
+}
+
+pub struct ArrayLiteral {
+    token: token::Token,
+    elements: Vec<Box<dyn Expression>>,
+}
+
+impl Expression for ArrayLiteral {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn string(&self) -> String {
+        let mut ret = String::new();
+
+        ret.push_str("[");
+
+        for elem in self.elements.iter() {
+            ret.push_str(format!("{}, ", elem.string()).as_str());
+        }
+
+        ret.push_str("]");
+
+        ret
+    }
+
+    fn expression_node(&self) {}
+}
+
+pub struct FunctionLiteral {
+    token: token::Token,
+    parameters: Vec<Box<Identifier>>,
+    body: Box<BlockStatement>,
+}
+
+impl Expression for FunctionLiteral {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn string(&self) -> String {
+        let mut ret = String::new();
+
+        ret.push_str(format!("{}(", self.token_literal()).as_str());
+
+        for param in self.parameters.iter() {
+            ret.push_str(format!("{}, ", param.string()).as_str());
+        }
+
+        ret.push_str(format!(") {}", self.body.string()).as_str());
+
+        ret
+    }
+
+    fn expression_node(&self) {}
+}
+
+pub struct HashLiteral {
+    token: token::Token,
+    pairs: HashMap<Box<dyn Expression>, Box<dyn Expression>>,
+}
+
+impl Expression for HashLiteral {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn string(&self) -> String {
+        let mut ret = String::new();
+
+        ret.push_str("{");
+        for (k, v) in self.pairs.iter() {
+            ret.push_str(format!("{}: {}, ", k.string(), v.string()).as_str());
+        }
+        ret.push_str("{");
+
+        ret
+    }
+
+    fn expression_node(&self) {}
+}
+
 pub struct Boolean {
     token: token::Token,
     value: bool,
@@ -174,14 +272,14 @@ impl Expression for Boolean {
     fn expression_node(&self) {}
 }
 
-pub struct IfExpression<'a> {
+pub struct IfExpression {
     token: token::Token,
     condition: Box<dyn Expression>,
-    consequence: &'a BlockStatement,
-    alternative: Option<&'a BlockStatement>,
+    consequence: Box<BlockStatement>,
+    alternative: Option<Box<BlockStatement>>,
 }
 
-impl<'a> Expression for IfExpression<'a> {
+impl Expression for IfExpression {
     fn token_literal(&self) -> String {
         self.token.literal.clone()
     }
@@ -193,7 +291,7 @@ impl<'a> Expression for IfExpression<'a> {
             self.consequence.string()
         ));
 
-        match self.alternative {
+        match &self.alternative {
             Some(block) => ret.push_str(format!("else {}", block.string()).as_str()),
             None => return ret,
         }
@@ -204,3 +302,108 @@ impl<'a> Expression for IfExpression<'a> {
     fn expression_node(&self) {}
 }
 
+pub struct CallExpression {
+    token: token::Token,
+    function: Box<dyn Expression>,
+    arguments: Vec<Box<dyn Expression>>,
+}
+
+impl Expression for CallExpression {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn string(&self) -> String {
+        let mut ret = String::new();
+
+        ret.push_str(format!("{}(", self.function.string()).as_str());
+
+        for arg in self.arguments.iter() {
+            ret.push_str(format!("{} ,", arg.string()).as_str());
+        }
+
+        ret.push_str(")");
+
+        ret
+    }
+
+    fn expression_node(&self) {}
+}
+
+pub struct PrefixExpression {
+    token: token::Token,
+    operator: String,
+    right: Box<dyn Expression>,
+}
+
+impl Expression for PrefixExpression {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn string(&self) -> String {
+        let mut ret = String::new();
+
+        ret.push_str(format!("({}{})", self.operator, self.right.string()).as_str());
+
+        ret
+    }
+
+    fn expression_node(&self) {}
+}
+
+pub struct InfixExpression {
+    token: token::Token,
+    operator: String,
+    left: Box<dyn Expression>,
+    right: Box<dyn Expression>,
+}
+
+impl Expression for InfixExpression {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn string(&self) -> String {
+        let mut ret = String::new();
+
+        ret.push_str(
+            format!(
+                "({} {} {})",
+                self.left.string(),
+                self.operator,
+                self.right.string()
+            )
+            .as_str(),
+        );
+
+        ret
+    }
+
+    fn expression_node(&self) {}
+}
+
+pub struct IndexExpression {
+    token: token::Token,
+    left: Box<dyn Expression>,
+    index: Box<dyn Expression>,
+}
+
+impl Expression for IndexExpression {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn string(&self) -> String {
+        let mut ret = String::new();
+
+        ret.push_str(format!("{}[{}]", self.left.string(), self.index.string()).as_str());
+
+        ret
+    }
+
+    fn expression_node(&self) {}
+}
+
+#[cfg(test)]
+mod tests;
