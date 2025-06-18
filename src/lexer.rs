@@ -16,13 +16,11 @@ impl Lexer {
         self.skip_whitespace();
         match self.ch {
             '=' => {
-                println!("=");
                 if self.peek_char() == '=' {
                     let ch = self.ch;
                     self.read_char();
                     tok = token::Token::new(token::EQ, format!("{}{}", ch, self.ch));
                 } else {
-                    println!("ASSIGN");
                     tok = token::Token::new(token::ASSIGN, format!("{}", self.ch));
                 }
             }
@@ -110,7 +108,7 @@ impl Lexer {
         let mut temp = self.input.chars();
 
         if self.read_position >= self.input.len() {
-            self.ch = '0';
+            self.ch = '\0';
         } else {
             self.ch = temp.nth(self.read_position).unwrap();
         }
@@ -126,8 +124,6 @@ impl Lexer {
             self.read_char()
         }
 
-        println!("next char: {}", self.ch);
-
         return self.input[position..self.position].to_string();
     }
 
@@ -136,7 +132,6 @@ impl Lexer {
         let position = self.position;
 
         while self.ch != '"' {
-            println!("read_string: {}", self.ch);
             self.read_char();
         }
 

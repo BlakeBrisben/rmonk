@@ -169,7 +169,8 @@ impl Expression for StringLiteral {
     }
 
     fn string(&self) -> String {
-        self.token.literal.clone()
+        let ret = String::from(format!("\"{}\"", self.token.literal.clone()));
+        ret
     }
 
     fn expression_node(&self) {}
