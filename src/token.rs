@@ -3,13 +3,16 @@ use std::collections::HashMap;
 pub type TokenType = &'static str;
 
 pub struct Token {
-    pub Type: TokenType,
-    pub Literal: String,
+    pub token_type: TokenType,
+    pub literal: String,
 }
 
 impl Token {
-    pub fn new(Type: TokenType, Literal: String) -> Token {
-        return Token { Type, Literal };
+    pub fn new(token_type: TokenType, literal: String) -> Token {
+        return Token {
+            token_type,
+            literal,
+        };
     }
 }
 
@@ -53,17 +56,37 @@ pub const RETURN: &str = "return";
 pub const STRING: &str = "STRING";
 
 pub fn lookup_ident(ident: String) -> TokenType {
-    let keywords: HashMap<String, TokenType> = HashMap::from([
-        (String::from("fn"), FUNCTION),
-        (String::from("let"), LET),
-        (String::from("true"), TRUE),
-        (String::from("false"), FALSE),
-        (String::from("if"), IF),
-        (String::from("else"), ELSE),
-        (String::from("return"), RETURN),
+    // let keywords: HashMap<String, TokenType> = HashMap::from([
+    //     (String::from("fn"), FUNCTION),
+    //     (String::from("let"), LET),
+    //     (String::from("true"), TRUE),
+    //     (String::from("false"), FALSE),
+    //     (String::from("if"), IF),
+    //     (String::from("else"), ELSE),
+    //     (String::from("return"), RETURN),
+    // ]);
+
+    let keywords: HashMap<&str, TokenType> = HashMap::from([
+        ("fn", FUNCTION),
+        ("let", LET),
+        ("true", TRUE),
+        ("false", FALSE),
+        ("if", IF),
+        ("else", ELSE),
+        ("return", RETURN),
     ]);
 
-    match keywords.get(ident.as_str()) {
+    // let mut keywords = HashMap::new();
+    //
+    // keywords.insert(String::from("fn"), FUNCTION);
+    // keywords.insert(String::from("let"), LET);
+    // keywords.insert(String::from("true"), TRUE);
+    // keywords.insert(String::from("false"), FALSE);
+    // keywords.insert(String::from("if"), IF);
+    // keywords.insert(String::from("else"), ELSE);
+    // keywords.insert(String::from("return"), RETURN);
+
+    match keywords.get(ident.as_str().trim()).copied() {
         Some(t) => t,
         None => IDENT,
     }

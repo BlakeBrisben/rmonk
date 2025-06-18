@@ -24,4 +24,11 @@ fn main() {
     println!("{tok}");
 
     let tok = token::STRING;
+
+    let mut l = lexer::new(String::from("= 5;"));
+
+    let tok = l.next_token();
+
+    println!("{}", tok.literal);
+    println!("{}", tok.token_type);
 }
