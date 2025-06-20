@@ -14,7 +14,7 @@ pub trait Expression {
 }
 
 pub struct Program {
-    statements: Vec<Box<dyn Statement>>,
+    pub statements: Vec<Box<dyn Statement>>,
 }
 
 impl Statement for Program {
@@ -37,29 +37,12 @@ impl Statement for Program {
     fn statement_node(&self) {}
 }
 
-pub struct Identifier {
-    token: token::Token,
-    value: String,
-}
-
-impl Expression for Identifier {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
-    }
-
-    fn string(&self) -> String {
-        self.value.clone()
-    }
-
-    fn expression_node(&self) {}
-}
-
 // STATEMENTS
 
 pub struct LetStatement {
-    token: token::Token,
-    name: Box<Identifier>,
-    value: Box<dyn Expression>,
+    pub token: token::Token,
+    pub name: Box<Identifier>,
+    pub value: Box<dyn Expression>,
 }
 
 impl Statement for LetStatement {
@@ -82,8 +65,8 @@ impl Statement for LetStatement {
 }
 
 pub struct ReturnStatement {
-    token: token::Token,
-    value: Box<dyn Expression>,
+    pub token: token::Token,
+    pub value: Box<dyn Expression>,
 }
 
 impl Statement for ReturnStatement {
@@ -101,8 +84,8 @@ impl Statement for ReturnStatement {
 }
 
 pub struct ExpressionStatement {
-    token: token::Token,
-    expression: Box<dyn Expression>,
+    pub token: token::Token,
+    pub expression: Box<dyn Expression>,
 }
 
 impl Statement for ExpressionStatement {
@@ -118,8 +101,8 @@ impl Statement for ExpressionStatement {
 }
 
 pub struct BlockStatement {
-    token: token::Token,
-    statements: Vec<Box<dyn Statement>>,
+    pub token: token::Token,
+    pub statements: Vec<Box<dyn Statement>>,
 }
 
 impl Statement for BlockStatement {
@@ -141,9 +124,26 @@ impl Statement for BlockStatement {
 
 // EXPRESSIONS
 
+pub struct Identifier {
+    pub token: token::Token,
+    pub value: String,
+}
+
+impl Expression for Identifier {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+
+    fn string(&self) -> String {
+        self.value.clone()
+    }
+
+    fn expression_node(&self) {}
+}
+
 pub struct IntegerLiteral {
-    token: token::Token,
-    value: i64,
+    pub token: token::Token,
+    pub value: i64,
 }
 
 impl Expression for IntegerLiteral {
@@ -159,8 +159,8 @@ impl Expression for IntegerLiteral {
 }
 
 pub struct StringLiteral {
-    token: token::Token,
-    value: String,
+    pub token: token::Token,
+    pub value: String,
 }
 
 impl Expression for StringLiteral {
@@ -177,8 +177,8 @@ impl Expression for StringLiteral {
 }
 
 pub struct ArrayLiteral {
-    token: token::Token,
-    elements: Vec<Box<dyn Expression>>,
+    pub token: token::Token,
+    pub elements: Vec<Box<dyn Expression>>,
 }
 
 impl Expression for ArrayLiteral {
@@ -204,9 +204,9 @@ impl Expression for ArrayLiteral {
 }
 
 pub struct FunctionLiteral {
-    token: token::Token,
-    parameters: Vec<Box<Identifier>>,
-    body: Box<BlockStatement>,
+    pub token: token::Token,
+    pub parameters: Vec<Box<Identifier>>,
+    pub body: Box<BlockStatement>,
 }
 
 impl Expression for FunctionLiteral {
@@ -232,8 +232,8 @@ impl Expression for FunctionLiteral {
 }
 
 pub struct HashLiteral {
-    token: token::Token,
-    pairs: HashMap<Box<dyn Expression>, Box<dyn Expression>>,
+    pub token: token::Token,
+    pub pairs: HashMap<Box<dyn Expression>, Box<dyn Expression>>,
 }
 
 impl Expression for HashLiteral {
@@ -257,8 +257,8 @@ impl Expression for HashLiteral {
 }
 
 pub struct Boolean {
-    token: token::Token,
-    value: bool,
+    pub token: token::Token,
+    pub value: bool,
 }
 
 impl Expression for Boolean {
@@ -274,10 +274,10 @@ impl Expression for Boolean {
 }
 
 pub struct IfExpression {
-    token: token::Token,
-    condition: Box<dyn Expression>,
-    consequence: Box<BlockStatement>,
-    alternative: Option<Box<BlockStatement>>,
+    pub token: token::Token,
+    pub condition: Box<dyn Expression>,
+    pub consequence: Box<BlockStatement>,
+    pub alternative: Option<Box<BlockStatement>>,
 }
 
 impl Expression for IfExpression {
@@ -304,9 +304,9 @@ impl Expression for IfExpression {
 }
 
 pub struct CallExpression {
-    token: token::Token,
-    function: Box<dyn Expression>,
-    arguments: Vec<Box<dyn Expression>>,
+    pub token: token::Token,
+    pub function: Box<dyn Expression>,
+    pub arguments: Vec<Box<dyn Expression>>,
 }
 
 impl Expression for CallExpression {
@@ -332,9 +332,9 @@ impl Expression for CallExpression {
 }
 
 pub struct PrefixExpression {
-    token: token::Token,
-    operator: String,
-    right: Box<dyn Expression>,
+    pub token: token::Token,
+    pub operator: String,
+    pub right: Box<dyn Expression>,
 }
 
 impl Expression for PrefixExpression {
@@ -354,10 +354,10 @@ impl Expression for PrefixExpression {
 }
 
 pub struct InfixExpression {
-    token: token::Token,
-    operator: String,
-    left: Box<dyn Expression>,
-    right: Box<dyn Expression>,
+    pub token: token::Token,
+    pub operator: String,
+    pub left: Box<dyn Expression>,
+    pub right: Box<dyn Expression>,
 }
 
 impl Expression for InfixExpression {
@@ -385,9 +385,9 @@ impl Expression for InfixExpression {
 }
 
 pub struct IndexExpression {
-    token: token::Token,
-    left: Box<dyn Expression>,
-    index: Box<dyn Expression>,
+    pub token: token::Token,
+    pub left: Box<dyn Expression>,
+    pub index: Box<dyn Expression>,
 }
 
 impl Expression for IndexExpression {

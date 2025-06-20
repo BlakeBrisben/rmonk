@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 pub type TokenType = &'static str;
 
+#[derive(Clone, PartialEq, Eq)]
 pub struct Token {
     pub token_type: TokenType,
     pub literal: String,
@@ -55,39 +56,22 @@ pub const ELSE: &str = "ELSE";
 pub const RETURN: &str = "return";
 pub const STRING: &str = "STRING";
 
+const KEYWORDS: [(&str, TokenType); 7] = [
+    ("fn", FUNCTION),
+    ("let", LET),
+    ("true", TRUE),
+    ("false", FALSE),
+    ("if", IF),
+    ("else", ELSE),
+    ("return", RETURN),
+];
+
 pub fn lookup_ident(ident: String) -> TokenType {
-    // let keywords: HashMap<String, TokenType> = HashMap::from([
-    //     (String::from("fn"), FUNCTION),
-    //     (String::from("let"), LET),
-    //     (String::from("true"), TRUE),
-    //     (String::from("false"), FALSE),
-    //     (String::from("if"), IF),
-    //     (String::from("else"), ELSE),
-    //     (String::from("return"), RETURN),
-    // ]);
-
-    let keywords: HashMap<&str, TokenType> = HashMap::from([
-        ("fn", FUNCTION),
-        ("let", LET),
-        ("true", TRUE),
-        ("false", FALSE),
-        ("if", IF),
-        ("else", ELSE),
-        ("return", RETURN),
-    ]);
-
-    // let mut keywords = HashMap::new();
-    //
-    // keywords.insert(String::from("fn"), FUNCTION);
-    // keywords.insert(String::from("let"), LET);
-    // keywords.insert(String::from("true"), TRUE);
-    // keywords.insert(String::from("false"), FALSE);
-    // keywords.insert(String::from("if"), IF);
-    // keywords.insert(String::from("else"), ELSE);
-    // keywords.insert(String::from("return"), RETURN);
-
-    match keywords.get(ident.as_str().trim()).copied() {
-        Some(t) => t,
-        None => IDENT,
+    for (k, v) in KEYWORDS.iter() {
+        if k == &ident {
+            return v;
+        }
     }
+
+    IDENT
 }
