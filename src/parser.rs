@@ -25,8 +25,8 @@ const PRECEDENCES: [(token::TokenType, u8); 10] = [
     (token::RPAREN, EQUALS),
 ];
 
-type PrefixParseFn = fn(&mut Parser) -> Box<dyn ast::Expression>;
-type InfixParseFn = fn(&mut Parser, e: Box<dyn ast::Expression>) -> Box<dyn ast::Expression>;
+type PrefixParseFn = fn(&mut Parser) -> Option<Box<dyn ast::Expression>>;
+type InfixParseFn = fn(&mut Parser, &Box<dyn ast::Expression>) -> Option<Box<dyn ast::Expression>>;
 
 pub struct Parser {
     l: Box<lexer::Lexer>,
@@ -79,38 +79,38 @@ impl Parser {
         self.infix_parse_fns.insert(tok, f);
     }
 
-    fn parse_identifier(&mut self) -> Box<dyn ast::Expression> {
-        Box::new(ast::Identifier {
+    fn parse_identifier(&mut self) -> Option<Box<dyn ast::Expression>> {
+        Some(Box::new(ast::Identifier {
             token: *self.cur_token.clone(),
             value: self.cur_token.literal.clone(),
-        })
+        }))
     }
 
-    fn parse_integer_literal(&mut self) -> Box<dyn ast::Expression> {
-        Box::new(ast::IntegerLiteral {
+    fn parse_integer_literal(&mut self) -> Option<Box<dyn ast::Expression>> {
+        Some(Box::new(ast::IntegerLiteral {
             token: *self.cur_token.clone(),
             value: self
                 .cur_token
                 .literal
                 .parse::<i64>()
                 .expect("Integer literal was not an integer"),
-        })
+        }))
     }
 
-    fn parse_string_literal(&mut self) -> Box<dyn ast::Expression> {
-        Box::new(ast::StringLiteral {
+    fn parse_string_literal(&mut self) -> Option<Box<dyn ast::Expression>> {
+        Some(Box::new(ast::StringLiteral {
             token: *self.cur_token.clone(),
             value: self.cur_token.literal.clone(),
-        })
+        }))
     }
 
-    fn parse_array_literal(&mut self) -> Box<dyn ast::Expression> {
-        Box::new(ast::ArrayLiteral {
+    fn parse_array_literal(&mut self) -> Option<Box<dyn ast::Expression>> {
+        Some(Box::new(ast::ArrayLiteral {
             token: *self.cur_token.clone(),
             elements: self
                 .parse_expression_list(token::RBRACKET)
                 .expect("Unable to parse expression list"),
-        })
+        }))
     }
 
     fn parse_function_literal(&mut self) -> Option<Box<dyn ast::Expression>> {
@@ -240,6 +240,14 @@ impl Parser {
         match prefix {
             Some(prefix) => {
                 let mut left_exp = prefix(self);
+                let mut left: Box<dyn ast::Expression>;
+
+                match left_exp {
+                    Some(l) => left = l,
+                    None => {
+                        return None;
+                    }
+                }
 
                 while !self.peek_token_is(token::SEMICOLON) && prec < self.peek_precedence() {
                     let infix_fns = self.infix_parse_fns.clone();
@@ -248,15 +256,21 @@ impl Parser {
                     match infix {
                         Some(infix) => {
                             self.next_token();
-                            left_exp = infix(self, left_exp);
+                            left_exp = infix(self, &left);
+                            match left_exp {
+                                Some(l) => left = l,
+                                None => {
+                                    self.new_error("Unable to parse using infix operator");
+                                }
+                            }
                         }
                         None => {
-                            return Some(left_exp);
+                            return Some(left);
                         }
                     }
                 }
 
-                return Some(left_exp);
+                return Some(left);
             }
             None => {
                 self.no_prefix_parse_fn_error(self.cur_token.token_type);
@@ -299,7 +313,8 @@ impl Parser {
             );
         }
 
-        if self.expect_peek(end) {
+        if !self.expect_peek(end) {
+            self.new_error(format!("Did not find {} at end of expression list", end).as_str());
             return None;
         }
         Some(list)
@@ -386,6 +401,10 @@ impl Parser {
             }
         }
         return LOWEST;
+    }
+
+    fn new_error(&mut self, msg: &str) {
+        self.errors.push(String::from(msg));
     }
 
     fn no_prefix_parse_fn_error(&mut self, tt: token::TokenType) {
